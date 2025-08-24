@@ -1,5 +1,5 @@
 import { LitElement, css, html } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { customElement, state } from "lit/decorators.js";
 import type { Modal } from "./modal";
 
 /**
@@ -10,8 +10,8 @@ import type { Modal } from "./modal";
  */
 @customElement("my-element")
 export class MyElement extends LitElement {
-  @state
-  modalIsOpen: boolean = false;
+  @state()
+  private modalIsOpen: boolean = false;
 
   /**
    * Copy for the read the docs hint.
@@ -21,7 +21,9 @@ export class MyElement extends LitElement {
    * The number of times the button has been clicked.
    */
 
-  handleCreateModal() {}
+  handleCreateModalIsChanged() {
+    this.modalIsOpen = !this.modalIsOpen;
+  }
 
   render() {
     return html`
@@ -30,8 +32,14 @@ export class MyElement extends LitElement {
           So this might be where the server wants to connect btw
           ${import.meta.env.VITE_API_URL || "Content not reachable"}
         </p>
-        <button @click="${this.handleCreateModal}">Craete Modal</button>
-        <app-modal title="create a Modal">
+        <button @click="${this.handleCreateModalIsChanged}">
+          Craete Modal
+        </button>
+        <app-modal
+          title="create a Modal"
+          .isOpen=${this.modalIsOpen}
+          @visible=${(e: CustomEvent) => (this.modalIsOpen = e.detail)}
+        >
           <p>Please show me what is inside my modal</p>
         </app-modal>
       </main>
@@ -41,7 +49,7 @@ export class MyElement extends LitElement {
   static styles = css`
     :host {
       width: 100%;
-      height: 100%
+      height: 100%;
       text-align: center;
       background: purple;
     }
@@ -49,7 +57,6 @@ export class MyElement extends LitElement {
       width: 100%;
       height: 100%;
     }
-
   `;
 }
 

@@ -7,14 +7,32 @@ export class Modal extends LitElement {
   title: string = "";
 
   @property({ type: Boolean })
-  isOpen: boolean = false;
+  public isOpen: boolean = false;
+  private eventName: string = "visible";
+  private async _notify(detail: boolean) {
+    this.dispatchEvent(
+      new CustomEvent(this.eventName, {
+        bubbles: true,
+        composed: true,
+        detail,
+      })
+    );
+  }
 
   render() {
+    console.log("IS open has changed");
     if (!this.isOpen) return;
     console.log("Rendering the MODAL");
+
     return html`
       <div class="shade">
-        <div class="modal">
+        <div
+          class="modal"
+          tabindex="0"
+          @blur=${() => {
+            this._notify(false);
+          }}
+        >
           <h2>${this.title}</h2>
           <slot></slot>
         </div>
