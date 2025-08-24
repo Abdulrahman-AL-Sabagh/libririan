@@ -1,7 +1,39 @@
 ﻿@page "/"
-
+@rendermode InteractiveServer
 <PageTitle>Home</PageTitle>
 
 <h1>Hello, world!</h1>
+<h2>Want to create a Model?</h2>
+<button @onclick="handleClick">Click here to create a model</button>
+<p>Is it clicked ? @isClicked </p>
+<Dialog
+    ModalTitle="Creating a Model"
+    @bind-IsOpen="isClicked">
+    <h2>HEllo world</h2>
+</Dialog>
 
-Welcome to your new app.
+@code
+{
+    private bool isClicked;
+    private bool isSubmitted;
+    private string modelName = String.Empty;
+
+
+    private void handleClick()
+    {
+        isClicked = true;
+    }
+
+
+    private void handleDialogClose()
+    {
+        this.isClicked = false;
+        this.isSubmitted = false;
+        this.modelName = String.Empty;
+    }
+
+    private void handleIsSumbitted()
+    {
+        isSubmitted = true;
+    }
+}

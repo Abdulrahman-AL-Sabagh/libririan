@@ -480,3 +480,5 @@ $RECYCLE.BIN/
 .idea/
 .env
 .env.development
+node_modules/
+.vs_code/

@@ -1,0 +1,12 @@
+﻿dialog {
+    padding: 2rem;
+    min-width: 200px;
+    position: relative;
+}
+
+#exit-btn {
+    background: blue;
+    position: absolute;
+    top: 99%;
+    left: 99%;
+}
