@@ -1,5 +1,5 @@
 import { LitElement, css, html } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { customElement, property, state } from "lit/decorators.js";
 import type { Modal } from "./modal";
 
 /**
@@ -10,21 +10,27 @@ import type { Modal } from "./modal";
  */
 @customElement("my-element")
 export class MyElement extends LitElement {
+  @state
+  modalIsOpen: boolean = false;
+
   /**
    * Copy for the read the docs hint.
    */
-  @property()
-  docsHint = "Click on the Vite and Lit logos to learn more";
 
   /**
    * The number of times the button has been clicked.
    */
-  @property({ type: Number })
-  count = 0;
+
+  handleCreateModal() {}
 
   render() {
     return html`
       <main>
+        <p>
+          So this might be where the server wants to connect btw
+          ${import.meta.env.VITE_API_URL || "Content not reachable"}
+        </p>
+        <button @click="${this.handleCreateModal}">Craete Modal</button>
         <app-modal title="create a Modal">
           <p>Please show me what is inside my modal</p>
         </app-modal>

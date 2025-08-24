@@ -1,0 +1,6 @@
+@Libriran_HostAddress = http://localhost:5283
+
+GET {{Libriran_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -10,7 +10,7 @@ public class DatabaseConfigurator
     public DatabaseProvider? dbProvider { get; set; }
     private SelctableCli selctableCli;
 
-    public static string projectRoot = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"../../..");
+    public static string projectRoot = Directory.GetCurrentDirectory();
 
     public DatabaseConfigurator(bool doInit = false)
     {
@@ -22,10 +22,13 @@ public class DatabaseConfigurator
         }
         else
         {
+            Console.WriteLine("PATH OF .env.development EXISTS"+ Path.Exists(Path.Combine(projectRoot, ".env.development")));
             username = Environment.GetEnvironmentVariable("Username");
             password = Environment.GetEnvironmentVariable("Password");
             dbName = Environment.GetEnvironmentVariable("dbName");
-            dbProvider = Enum.Parse<DatabaseProvider>(Environment.GetEnvironmentVariable("db") ?? throw new InvalidOperationException());
+            string? db = Environment.GetEnvironmentVariable("db");
+            Console.WriteLine($"{username} {password} {dbName} {db}");
+            dbProvider = Enum.Parse<DatabaseProvider>(db, ignoreCase: true);
         }
     }
 
@@ -107,10 +110,10 @@ public class DatabaseConfigurator
         var envPath = Path.Combine(projectRoot, ".env.development");
         File.WriteAllText(envPath,
             $"""
-             Username="{username}"
-             Password="{password}"
-             db="{dbProvider.ToString()}"
-             dbName="{dbName}"
+             Username={username}
+             Password={password}
+             db={dbProvider.ToString()}
+             dbName={dbName}
              """);
         Console.WriteLine($"Created environment file {envPath}");
     }
