@@ -45,11 +45,15 @@ namespace Libriran
                 }
             }
 
+            var _filePath = Directory.GetCurrentDirectory();
+
+            Directory.CreateDirectory(Path.Combine(_filePath, "GeneratedProjects"));
+            string filePath = Path.Combine(_filePath, "GeneratedProjects/models.json");
 
 
             var ser = new Serializer();
             
-            Model model1 = new Model
+            Model model1 = new()
             {
                 Name = "User",
                 Fields =
@@ -59,7 +63,7 @@ namespace Libriran
                     new ModelField { Name = "Password", Type = "string", IsNullable = false, IsSecret = true }
                 ]
             };
-            Model model2 = new Model
+            Model model2 = new()
             {
                 Name = "Post",
                 Fields =
@@ -79,7 +83,10 @@ namespace Libriran
                 RelationType = RelationshipType.ManyToOne
             });
 
-            ser.Serialize([model1, model2]);
+            ser.Serialize([model1, model2], filePath);
+            
+            var parser = new Parser();
+            parser.Parse(filePath);
 
             app.UseHttpsRedirection();
 
