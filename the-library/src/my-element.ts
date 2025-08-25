@@ -1,7 +1,9 @@
-import { LitElement, css, html } from "lit";
+import { css, html } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import type { Modal } from "./modal";
-
+import "./modal";
+import "./card";
+import { Component } from "./component";
 /**
  * An example element.
  *
@@ -9,10 +11,12 @@ import type { Modal } from "./modal";
  * @csspart button - The button
  */
 @customElement("my-element")
-export class MyElement extends LitElement {
+export class MyElement extends Component {
   @state()
   private modalIsOpen: boolean = false;
 
+  @state()
+  private selectedCards: string[] = [];
   /**
    * Copy for the read the docs hint.
    */
@@ -35,27 +39,45 @@ export class MyElement extends LitElement {
         <button @click="${this.handleCreateModalIsChanged}">
           Craete Modal
         </button>
+        
         <app-modal
           title="create a Modal"
           .isOpen=${this.modalIsOpen}
           @visible=${(e: CustomEvent) => (this.modalIsOpen = e.detail)}
         >
-          <p>Please show me what is inside my modal</p>
+          ${[
+            "Integer",
+            "Float",
+            "Boolean",
+            "String",
+            "Charcter",
+            "Object",
+            "File",
+            "Relation",
+          ].map((t) => {
+            return html`
+              <app-card
+                title="${t}"
+                content="Some Some temporary Content for now"
+                .handleClick="${() => {
+                  this.selectedCards.push(t);
+                  console.log(this.selectedCards);
+                }}"
+              >
+                <img slot="image" alt="It does not exist yet" />
+              </app-card>
+            `;
+          })}
         </app-modal>
       </main>
     `;
   }
 
   static styles = css`
-    :host {
-      width: 100%;
-      height: 100%;
-      text-align: center;
-      background: purple;
-    }
     main {
       width: 100%;
       height: 100%;
+      isolation: isolate;
     }
   `;
 }

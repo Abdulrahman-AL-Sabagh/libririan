@@ -1,17 +1,15 @@
-import { css, html, LitElement } from "lit";
+import { css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
+import { Component } from "./component";
 
 @customElement("app-modal")
-export class Modal extends LitElement {
-  @property({ attribute: "title" })
-  title: string = "";
+export class Modal extends Component {
+  @property({ type: Boolean }) isOpen = false;
+  @property({ attribute: "title" }) title = "";
 
-  @property({ type: Boolean })
-  public isOpen: boolean = false;
-  private eventName: string = "visible";
-  private async _notify(detail: boolean) {
+  private _notify(detail: boolean) {
     this.dispatchEvent(
-      new CustomEvent(this.eventName, {
+      new CustomEvent("visible", {
         bubbles: true,
         composed: true,
         detail,
@@ -19,20 +17,26 @@ export class Modal extends LitElement {
     );
   }
 
+  _handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key === "Escape" && this.isOpen) this._notify(false);
+  };
+
+  connectedCallback() {
+    super.connectedCallback();
+    window.addEventListener("keydown", this._handleKeyDown);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    window.removeEventListener("keydown", this._handleKeyDown);
+  }
+
   render() {
-    console.log("IS open has changed");
     if (!this.isOpen) return;
-    console.log("Rendering the MODAL");
 
     return html`
-      <div class="shade">
-        <div
-          class="modal"
-          tabindex="0"
-          @blur=${() => {
-            this._notify(false);
-          }}
-        >
+      <div class="shade" @click=${() => this._notify(false)}>
+        <div class="modal" @click=${(e: Event) => e.stopPropagation()}>
           <h2>${this.title}</h2>
           <slot></slot>
         </div>
@@ -48,17 +52,14 @@ export class Modal extends LitElement {
       width: 100vw;
       height: 100vh;
       background-color: rgba(0, 0, 0, 0.3);
-
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
     .modal {
-      background: white;
       z-index: 10;
       padding: 2rem;
-      top: 15%;
       border-radius: 15px;
     }
   `;
