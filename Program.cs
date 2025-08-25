@@ -1,5 +1,7 @@
 
 using DotNetEnv;
+using Libriran.Models;
+using Libriran.Util.Parser;
 using Libririan;
 
 namespace Libriran
@@ -44,6 +46,40 @@ namespace Libriran
             }
 
 
+
+            var ser = new Serializer();
+            
+            Model model1 = new Model
+            {
+                Name = "User",
+                Fields =
+                [
+                    new ModelField { Name = "Id", Type = "int", IsNullable = false, IsSecret = false },
+                    new ModelField { Name = "Username", Type = "string", IsNullable = false, IsSecret = false },
+                    new ModelField { Name = "Password", Type = "string", IsNullable = false, IsSecret = true }
+                ]
+            };
+            Model model2 = new Model
+            {
+                Name = "Post",
+                Fields =
+                [
+                    new ModelField { Name = "Id", Type = "int", IsNullable = false, IsSecret = false },
+                    new ModelField { Name = "Title", Type = "string", IsNullable = false, IsSecret = false },
+                    new ModelField { Name = "Content", Type = "string", IsNullable = false, IsSecret = false },
+                    new ModelField { Name = "UserId", Type = "int", IsNullable = false, IsSecret = false }
+                ], 
+              
+            };
+            model2.Relations.Add(new Relationship
+            {
+                Name = "UserPosts",
+                SourceField = model2.Fields.First(f => f.Name == "UserId"),
+                TargetField = model1.Fields.First(f => f.Name == "Id"),
+                RelationType = RelationshipType.ManyToOne
+            });
+
+            ser.Serialize([model1, model2]);
 
             app.UseHttpsRedirection();
 
