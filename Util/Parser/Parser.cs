@@ -127,6 +127,7 @@ public class {controllerNmae}: ControllerBase {{
     public {item.Name}Controller(AppContext context) {{
         _context = context;
     }}
+   {_generateGetAllControllerTemplate(item)}
    {_generateGetByIdControllerTemplate(item)}
    {_generatePostControllerTemplate(item)}
 }}
@@ -183,5 +184,19 @@ public ActionResult<{m.Name}> Create({m.Name} {parameterName})
 ";
         return controllerCode;
 
+    }
+
+    private string _generateGetAllControllerTemplate(Model m)
+    {
+        var controllerCode = $@"
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<IEnumerable<{m.Name}>> GetAll()
+        {{
+            var items = this._context.{m.Name}s;
+            return this.Ok(items);
+        }}
+            ";
+        return controllerCode;
     }
 }
