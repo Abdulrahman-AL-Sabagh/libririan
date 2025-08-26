@@ -53,28 +53,31 @@ namespace Libriran
 
             var ser = new Serializer();
             
-            Model model1 = new()
-            {
-                Name = "User",
-                Fields =
+            Model model1 = new Model(
+                                            "User",
+                
                 [
                     new ModelField { Name = "Id", Type = "int", IsNullable = false, IsSecret = false },
                     new ModelField { Name = "Username", Type = "string", IsNullable = false, IsSecret = false },
                     new ModelField { Name = "Password", Type = "string", IsNullable = false, IsSecret = true }
                 ]
-            };
-            Model model2 = new()
+                                          
+                                          )
             {
-                Name = "Post",
-                Fields =
+              
+            };
+            Model model2 = new Model(
+
+                 "Post",
+
                 [
                     new ModelField { Name = "Id", Type = "int", IsNullable = false, IsSecret = false },
                     new ModelField { Name = "Title", Type = "string", IsNullable = false, IsSecret = false },
                     new ModelField { Name = "Content", Type = "string", IsNullable = false, IsSecret = false },
                     new ModelField { Name = "UserId", Type = "int", IsNullable = false, IsSecret = false }
-                ], 
-              
-            };
+                ]
+           );
+            
             model2.Relations.Add(new Relationship
             {
                 Name = "UserPosts",

@@ -1,3 +1,4 @@
+using Libriran.Models;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -8,26 +9,21 @@ namespace Libriran.Util.Parser
 
         private readonly string _filePath = Directory.GetCurrentDirectory();
 
-        private string _generateJsonContent(HashSet<Model> models)
+        private string _generateJsonContent(HashSet<DomainObject> objects)
         {
 
             
-            var data = new { models };
+            var data = new { objects };
             JsonSerializerOptions options = new()
             { WriteIndented = true };
             return JsonSerializer.Serialize(data, options);
         }
 
-        public void Serialize(HashSet<Model> models, string path)
+        public void Serialize(HashSet<DomainObject> objects, string path)
         {
-            string jsonContent = _generateJsonContent(models);
+            string jsonContent = _generateJsonContent(objects);
             File.WriteAllText(path, jsonContent);
             Console.WriteLine($"Models serialized to {path}");
         }
-
-
-
-
-
     }
 }
