@@ -45,7 +45,7 @@ namespace Libriran
                 }
             }
 
-            var _filePath = Directory.GetCurrentDirectory();
+            var _filePath = Path.Combine("../../..",Directory.GetCurrentDirectory());
             var dirPath = Path.Combine(_filePath, "GeneratedProjects");
             Directory.CreateDirectory(dirPath);
             string filePath = Path.Combine(_filePath, "GeneratedProjects/models.json");

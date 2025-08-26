@@ -1,4 +1,5 @@
 using Libriran.Models;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -40,7 +41,8 @@ class Parser
                Console.WriteLine($"Unknown object type: {obj.GetType()}");
             }
         }
-        generateDbContext(models,outputDirectoryPath);
+        _generateDbContext(models,outputDirectoryPath);
+        _generateControllerClassTempalte(models,outputDirectoryPath);
     }
 
     private void generateClass(HashSet<Model> models, string outputDirPath)
@@ -63,13 +65,13 @@ public class {item.Name}
         }
     }
 
-    private void generateDbContext(HashSet<Model> models, string outputDir)
+    private void _generateDbContext(HashSet<Model> models, string outputDir)
     {
         var dbContextCode = $@"
 using Microsoft.EntityFrameworkCore;
 public class AppContext: DbContext
 {{
-    {string.Join(Environment.NewLine,models.Select(model => @$"    public DbSet<{model.Name}> {model.Name.ToLower()} {{ get; set; }}").ToList())}
+    {string.Join(Environment.NewLine,models.Select(model => @$"    public DbSet<{model.Name}> {model.Name}s {{ get; set; }}").ToList())}
 }}
 ";
         File.WriteAllText(
@@ -109,29 +111,56 @@ public class AppContext: DbContext
         return relationSet;
     }
 
+    private void _generateControllerClassTempalte(HashSet<Model> models, string outputDirPath)
+    {
 
-    private string generatePostController(Model m)
+        foreach (var item in models)
+        {
+            var controllerNmae = $"{item.Name}Controller";
+            var template = @$"
+using Microsoft.AspNetCore.Mvc;
+
+[ApiController]
+[Route(""[controller]"")]
+public class {controllerNmae}: ControllerBase {{
+    private AppContext _context;
+    public {item.Name}Controller(AppContext context) {{
+        _context = context;
+    }}
+
+   {_generatePostControllerTemplate(item)}
+}}
+";
+            var fileName = Path.Combine(outputDirPath,  $"{controllerNmae}.cs");
+            File.WriteAllText(fileName, template);
+        }
+
+    }
+    private string _generatePostControllerTemplate(Model m)
     {
         var contextName = "";
-        var parameterName = m.Name[0];
-        var controllerCode = $@"""
+        var parameterName = m.Name.ToLower()[0];
+        var controllerCode = $@"
 [HttpPost]
 [ProducesResponseType(StatusCodes.Status201Created)]
 [ProducesResponseType(StatusCodes.Status400Request)]
-public ActionResult<{m.Name}> Create(${m.Name} {m.Name[0]})
+public ActionResult<{m.Name}> Create({m.Name} {parameterName})
 {{
     if ({parameterName} is null)
     {{
         return this.BadRequest();
 
     }}
+    this._context.{m.Name}s.Add({parameterName});
+    this._context.SaveChanges();
+    return this.CreatedAtAction(nameof(this.GetById), new {{ id = {parameterName}.Id }}, {parameterName});
 
 }}
-""";
+";
 
         return controllerCode;
 
 
     }
-
+    
 }
