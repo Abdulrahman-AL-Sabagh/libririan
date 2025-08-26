@@ -7,6 +7,7 @@ class Parser
 {
 
     private string _projectFolder = Directory.GetCurrentDirectory();
+    private string _contextName = "appContext";
 
     public void Parse(string jsonPath, string outputDirectoryPath)
     {
@@ -26,10 +27,12 @@ class Parser
     {
         Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
     });
+        HashSet<Model> models = [];
         foreach (DomainObject obj in objects.Objects)
         {
            if (obj is Model model)
            {
+                models.Add(model);
                generateClass([model],outputDirectoryPath);
             }
            else
@@ -37,6 +40,7 @@ class Parser
                Console.WriteLine($"Unknown object type: {obj.GetType()}");
             }
         }
+        generateDbContext(models,outputDirectoryPath);
     }
 
     private void generateClass(HashSet<Model> models, string outputDirPath)
@@ -59,6 +63,21 @@ public class {item.Name}
         }
     }
 
+    private void generateDbContext(HashSet<Model> models, string outputDir)
+    {
+        var dbContextCode = $@"
+using Microsoft.EntityFrameworkCore;
+public class AppContext: DbContext
+{{
+    {string.Join(Environment.NewLine,models.Select(model => @$"    public DbSet<{model.Name}> {model.Name.ToLower()} {{ get; set; }}").ToList())}
+}}
+";
+        File.WriteAllText(
+            path: Path.Combine(outputDir, "AppContext.cs"),
+            contents: dbContextCode
+            );
+           
+    }
     private HashSet<string> _generateFields(HashSet<ModelField> fields)
     {
 
@@ -90,5 +109,29 @@ public class {item.Name}
         return relationSet;
     }
 
+
+    private string generatePostController(Model m)
+    {
+        var contextName = "";
+        var parameterName = m.Name[0];
+        var controllerCode = $@"""
+[HttpPost]
+[ProducesResponseType(StatusCodes.Status201Created)]
+[ProducesResponseType(StatusCodes.Status400Request)]
+public ActionResult<{m.Name}> Create(${m.Name} {m.Name[0]})
+{{
+    if ({parameterName} is null)
+    {{
+        return this.BadRequest();
+
+    }}
+
+}}
+""";
+
+        return controllerCode;
+
+
+    }
 
 }
