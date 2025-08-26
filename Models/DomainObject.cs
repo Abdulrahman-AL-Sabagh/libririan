@@ -11,7 +11,6 @@ namespace Libriran.Models
     {
       public string Name { get; set; } = null!;
     
-        public string Kind { get; set; } = null!;
 
     }
 }

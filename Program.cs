@@ -46,8 +46,8 @@ namespace Libriran
             }
 
             var _filePath = Directory.GetCurrentDirectory();
-
-            Directory.CreateDirectory(Path.Combine(_filePath, "GeneratedProjects"));
+            var dirPath = Path.Combine(_filePath, "GeneratedProjects");
+            Directory.CreateDirectory(dirPath);
             string filePath = Path.Combine(_filePath, "GeneratedProjects/models.json");
 
 
@@ -81,15 +81,14 @@ namespace Libriran
             model2.Relations.Add(new Relationship
             {
                 Name = "UserPosts",
-                SourceField = model2.Fields.First(f => f.Name == "UserId"),
-                TargetField = model1.Fields.First(f => f.Name == "Id"),
+                TargetModelName = "User",
                 RelationType = RelationshipType.ManyToOne
             });
 
             ser.Serialize([model1, model2], filePath);
             
             var parser = new Parser();
-            parser.Parse(filePath);
+            parser.Parse(filePath,dirPath);
 
             app.UseHttpsRedirection();
 

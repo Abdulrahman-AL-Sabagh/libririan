@@ -13,9 +13,13 @@ namespace Libriran.Util.Parser
         {
 
             
-            var data = new { objects };
+            var data = new { Objects = objects };
             JsonSerializerOptions options = new()
-            { WriteIndented = true };
+            { WriteIndented = true, Converters =
+                {
+                    new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
+                }
+            };
             return JsonSerializer.Serialize(data, options);
         }
 

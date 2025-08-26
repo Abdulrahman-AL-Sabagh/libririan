@@ -1,10 +1,11 @@
-using Libriran.Models;
-
-public class Relationship
+namespace Libriran.Models
 {
-    public string Name { get; set; }
-    public ModelField SourceField { get; set; }
-    public ModelField TargetField { get; set; }
-    public RelationshipType RelationType {get; set; } // e.g., "OneToMany", "ManyToMany"
- 
+    public class Relationship
+    {
+        public string Name { get; set; } = null!;
+
+        public string TargetModelName { get; set; } = null!;
+        public RelationshipType RelationType { get; set; } // e.g., "OneToMany", "ManyToMany"
+
+    }
 }

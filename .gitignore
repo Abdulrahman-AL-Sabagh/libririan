@@ -482,3 +482,4 @@ $RECYCLE.BIN/
 .env.development
 node_modules/
 .vs_code/
+GeneratedProjects/*

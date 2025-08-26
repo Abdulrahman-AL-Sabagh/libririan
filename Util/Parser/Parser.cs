@@ -1,30 +1,93 @@
 using Libriran.Models;
+using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 class Parser
 {
 
     private string _projectFolder = Directory.GetCurrentDirectory();
 
-    public void Parse(string path)
+    public void Parse(string jsonPath, string outputDirectoryPath)
     {
+        Console.WriteLine($"Parsing file at path: {jsonPath}");
 
         ParsedDomainObjects objects;
-        if (path.CompareTo(string.Empty) == 0  || !File.Exists(path))
+        if (!File.Exists(jsonPath))
         {
-            throw new FileNotFoundException($"The file at path {path} was not found.");
+            throw new FileNotFoundException($"The file at path {jsonPath} was not found.");
         }
 
 
-        using StreamReader r = new(path);
+        using StreamReader r = new(jsonPath);
         string json = r.ReadToEnd();
-        Console.WriteLine(json);
         objects = JsonSerializer.Deserialize<ParsedDomainObjects>(json,
-    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-        foreach (var obj in objects.Objects)
+    new JsonSerializerOptions
+    {
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
+    });
+        foreach (DomainObject obj in objects.Objects)
         {
-           Console.Write(obj.ToString());
+           if (obj is Model model)
+           {
+               generateClass([model],outputDirectoryPath);
+            }
+           else
+           {
+               Console.WriteLine($"Unknown object type: {obj.GetType()}");
+            }
         }
+    }
+
+    private void generateClass(HashSet<Model> models, string outputDirPath)
+    {
+        foreach (var item in models)
+        {
+            var fields = _generateFields(item.Fields);
+            var relations = _generateRelations(item.Relations);
+            var indent = "    ";
+        var classCode = $@"
+using System.Text.Json.Serialization;
+
+public class {item.Name}
+{{
+{string.Join(Environment.NewLine, fields.Select(f => indent + f))}
+{string.Join(Environment.NewLine, relations.Select(r => indent + r))}
+}}";
+           var fileName = Path.Combine(outputDirPath, $"{item.Name}.cs");
+           File.WriteAllText(fileName, classCode);
+        }
+    }
+
+    private HashSet<string> _generateFields(HashSet<ModelField> fields)
+    {
+
+        var fieldSet = new HashSet<string>();
+        foreach (var item in fields)
+        {
+            var field = $"{(item.IsSecret ? "[JsonIgnore]" : "")}" + 
+                $"public {(!item.IsNullable ? "required" : "")} {item.Type} {item.Name} {{ get; set; }}";
+            fieldSet.Add(field);
+        }
+        return fieldSet;
+    }
+
+    private HashSet<string> _generateRelations(HashSet<Relationship> relations) 
+    {
+        var relationSet = new HashSet<string>();
+        foreach (var item in relations)
+        {
+            var relation = item.RelationType switch
+            {
+                RelationshipType.OneToMany => $"public List<{item.TargetModelName}> {item.TargetModelName}s {{ get; set; }} = new();",
+                RelationshipType.ManyToOne => $"public {item.TargetModelName} {item.TargetModelName} {{ get; set; }}",
+                RelationshipType.OneToOne => $"public {item.TargetModelName} {item.TargetModelName} {{ get; set; }}",
+                RelationshipType.ManyToMany => $"public List<{item.TargetModelName}> {item.TargetModelName}s {{ get; set; }} = new();",
+                _ => throw new Exception("Unknown relationship type")
+            };
+            relationSet.Add(relation);
+        }
+        return relationSet;
     }
 
 

@@ -12,7 +12,6 @@ namespace Libriran.Models
         public Model(string Name, HashSet<ModelField>? fields, HashSet<Relationship>? relations = null)
         {
             base.Name = Name;
-            Kind = "Model";
             Fields = fields ?? [];
             Relations = relations ?? [];
 
@@ -21,7 +20,7 @@ namespace Libriran.Models
 
         public override string ToString()
         {
-            return $"Model: {Name}, Kind: ${this.Kind}, Fields: [{string.Join(", ", Fields)}], Relations: [{string.Join(", ", Relations)}]";
+            return $"Model: {Name}, Fields: [{string.Join(", ", Fields)}], Relations: [{string.Join(", ", Relations)}]";
         }
     }
 }
