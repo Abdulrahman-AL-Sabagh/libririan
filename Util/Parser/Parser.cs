@@ -130,6 +130,8 @@ public class {controllerNmae}: ControllerBase {{
    {_generateGetAllControllerTemplate(item)}
    {_generateGetByIdControllerTemplate(item)}
    {_generatePostControllerTemplate(item)}
+    {_generatePutControllerTemplate(item)}
+    {_generateDeleteControllerTemplate(item)}
 }}
 ";
             var fileName = Path.Combine(outputDirPath, $"{controllerNmae}.cs");
@@ -197,6 +199,55 @@ public ActionResult<{m.Name}> Create({m.Name} {parameterName})
             return this.Ok(items);
         }}
             ";
+        return controllerCode;
+    }
+
+    private string _generateDeleteControllerTemplate(Model m)
+    {
+        var parameterName = "id";
+        var controllerCode = $@"
+        [HttpDelete(""{{{parameterName}}}"")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public IActionResult Delete(int {parameterName})
+        {{
+            var item = this._context.{m.Name}s.Find({parameterName});
+            if (item is null)
+            {{
+                return this.NotFound();
+            }}
+            this._context.{m.Name}s.Remove(item);
+            this._context.SaveChanges();
+            return this.NoContent();
+        }}
+";
+        return controllerCode;
+    }
+
+    private string _generatePutControllerTemplate(Model m)
+    {
+        var parameterName = m.Name.ToLower()[0];
+        var controllerCode = $@"
+        [HttpPut(""{{id}}"")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public IActionResult Update(int id, {m.Name} {parameterName})
+        {{
+            if (id != {parameterName}.Id)
+            {{
+                return this.BadRequest();
+            }}
+            var existingItem = this._context.{m.Name}s.Find(id);
+            if (existingItem is null)
+            {{
+                return this.NotFound();
+            }}
+            this._context.Entry(existingItem).CurrentValues.SetValues({parameterName});
+            this._context.SaveChanges();
+            return this.NoContent();
+        }}
+    ";
         return controllerCode;
     }
 }
