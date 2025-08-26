@@ -31,18 +31,18 @@ class Parser
         HashSet<Model> models = [];
         foreach (DomainObject obj in objects.Objects)
         {
-           if (obj is Model model)
-           {
+            if (obj is Model model)
+            {
                 models.Add(model);
-               generateClass([model],outputDirectoryPath);
+                generateClass([model], outputDirectoryPath);
             }
-           else
-           {
-               Console.WriteLine($"Unknown object type: {obj.GetType()}");
+            else
+            {
+                Console.WriteLine($"Unknown object type: {obj.GetType()}");
             }
         }
-        _generateDbContext(models,outputDirectoryPath);
-        _generateControllerClassTempalte(models,outputDirectoryPath);
+        _generateDbContext(models, outputDirectoryPath);
+        _generateControllerClassTempalte(models, outputDirectoryPath);
     }
 
     private void generateClass(HashSet<Model> models, string outputDirPath)
@@ -52,7 +52,7 @@ class Parser
             var fields = _generateFields(item.Fields);
             var relations = _generateRelations(item.Relations);
             var indent = "    ";
-        var classCode = $@"
+            var classCode = $@"
 using System.Text.Json.Serialization;
 
 public class {item.Name}
@@ -60,8 +60,8 @@ public class {item.Name}
 {string.Join(Environment.NewLine, fields.Select(f => indent + f))}
 {string.Join(Environment.NewLine, relations.Select(r => indent + r))}
 }}";
-           var fileName = Path.Combine(outputDirPath, $"{item.Name}.cs");
-           File.WriteAllText(fileName, classCode);
+            var fileName = Path.Combine(outputDirPath, $"{item.Name}.cs");
+            File.WriteAllText(fileName, classCode);
         }
     }
 
@@ -71,14 +71,14 @@ public class {item.Name}
 using Microsoft.EntityFrameworkCore;
 public class AppContext: DbContext
 {{
-    {string.Join(Environment.NewLine,models.Select(model => @$"    public DbSet<{model.Name}> {model.Name}s {{ get; set; }}").ToList())}
+    {string.Join(Environment.NewLine, models.Select(model => @$"    public DbSet<{model.Name}> {model.Name}s {{ get; set; }}").ToList())}
 }}
 ";
         File.WriteAllText(
             path: Path.Combine(outputDir, "AppContext.cs"),
             contents: dbContextCode
             );
-           
+
     }
     private HashSet<string> _generateFields(HashSet<ModelField> fields)
     {
@@ -86,14 +86,14 @@ public class AppContext: DbContext
         var fieldSet = new HashSet<string>();
         foreach (var item in fields)
         {
-            var field = $"{(item.IsSecret ? "[JsonIgnore]" : "")}" + 
+            var field = $"{(item.IsSecret ? "[JsonIgnore]" : "")}" +
                 $"public {(!item.IsNullable ? "required" : "")} {item.Type} {item.Name} {{ get; set; }}";
             fieldSet.Add(field);
         }
         return fieldSet;
     }
 
-    private HashSet<string> _generateRelations(HashSet<Relationship> relations) 
+    private HashSet<string> _generateRelations(HashSet<Relationship> relations)
     {
         var relationSet = new HashSet<string>();
         foreach (var item in relations)
@@ -127,11 +127,11 @@ public class {controllerNmae}: ControllerBase {{
     public {item.Name}Controller(AppContext context) {{
         _context = context;
     }}
-
+   {_generateGetByIdControllerTemplate(item)}
    {_generatePostControllerTemplate(item)}
 }}
 ";
-            var fileName = Path.Combine(outputDirPath,  $"{controllerNmae}.cs");
+            var fileName = Path.Combine(outputDirPath, $"{controllerNmae}.cs");
             File.WriteAllText(fileName, template);
         }
 
@@ -162,5 +162,26 @@ public ActionResult<{m.Name}> Create({m.Name} {parameterName})
 
 
     }
-    
+
+    private string _generateGetByIdControllerTemplate(Model m)
+    {
+        var parameterName = "id";
+        var controllerCode = $@"
+        [HttpGet(""{{{parameterName}}}"")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public ActionResult<{m.Name}> GetById(int {parameterName})
+        {{
+            var item = this._context.{m.Name}s.Find({parameterName});
+            if (item is null)
+            {{
+                return this.NotFound();
+            }}
+            return this.Ok(item);
+        }}
+
+";
+        return controllerCode;
+
+    }
 }
